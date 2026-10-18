@@ -84,7 +84,9 @@ private final class SoftwareAudioController: NSObject {
       if !CGEvent.tapIsEnabled(tap: tap) { CGEvent.tapEnable(tap: tap, enable: true) }
       return
     }
-    volumeTap = CGEvent.tapCreate(tap: .cgAnnotatedSessionEventTap, place: .headInsertEventTap, options: .defaultTap, eventsOfInterest: CGEventMask(1 << 14), callback: { _, type, event, context in
+    // Filter volume at the session stage so unrelated playback keys retain
+    // their normal routing to Spotify and other media applications.
+    volumeTap = CGEvent.tapCreate(tap: .cgSessionEventTap, place: .headInsertEventTap, options: .defaultTap, eventsOfInterest: CGEventMask(1 << 14), callback: { _, type, event, context in
       guard let context = context else { return Unmanaged.passUnretained(event) }
       let owner = Unmanaged<SoftwareAudioController>.fromOpaque(context).takeUnretainedValue()
       if type == .tapDisabledByTimeout || type == .tapDisabledByUserInput {
